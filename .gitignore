@@ -1,0 +1,14 @@
+# Build artifacts
+publish/
+*.exe
+
+# .NET
+bin/
+obj/
+*.user
+
+# User config (personal settings)
+timer_config.ini
+
+# macOS
+.DS_Store

@@ -1,8 +1,64 @@
-IyBQcm9ncmVzc0JhclRpbWVyCgrlmKnlvqHjgarjgqvjgqbjg7Pjg4jjgqDjgqbjg7Pjg4hjgr/jgqTjg烤jg7zjefWstZoiWindows44 g44K544K/44Oz44OA44Ot44O3IEVYRekpgemdnikKCiMjIOODleOCoeOCpOODq+aSreaJgAoKYGBgCnRpbWVyLmNzICAgICAgIOKGkCBDIyDjgbdjg7zjgrnjgrPjg7zjg89i4KShg6Xjg7XjgqTjg7MOKnRpbWVyLmNzcHJvaiAgIOKGkCAuTkVUIJvjg63jgrjjgqfjgq/jg4jjg5XjgqHjgqTjg6sKYnVpbGQuYmF0ICAgICAgIOKGkCDjg5Pjg6vjg4njgrnjgq/jg6Xjg4jkefWkoeixs+WtmO3jsT8gKFdpbmRvd3MgZOOAjuWtmOiT7+nkuIYpClJFQURNRS5tZCAgICAgIOKGkCDjgZPjga7jg5XjgqHjgqTjg6sKdGltZXJfY29uZmlnLmluaSAgwqzjga7otrLlrprgupfjgonlrp/pk5noqKLjga7bYXihfb3nrKwodjN6y25JveW1IOSY3S2I4WqzZnZkCmBgYAoKIyMg44OT44Or44OJ5pa95Z+M77yIV2luZG93cyDjgabjjQoKYGJ1aWxkLmJhdGAg44KSIOODgOODluODq44Kv44Oq44OD44Kv44GZ44KL44Gg44GR44Gn44GZ44CC
+# ProgressBarTimer
 
-| 珠㭞鑑 | 動慄 |
+シンプルなカウントダウンタイマー（Windows スタンドアロン EXE）
+
+## ファイル構成
+
+```
+timer.cs       ← C# ソースコード（メイン）
+timer.csproj   ← .NET プロジェクトファイル
+build.bat      ← ビルドスクリプト（Windows で実行）
+README.md      ← このファイル
+timer_config.ini  ← 設定ファイル（起動後に自動生成）
+```
+
+## ビルド方法（Windows にて）
+
+`build.bat` をダブルクリックするだけです。
+
+| 環境 | 動作 |
 |------|------|
-| .NET SDK 6+ 44GC44KK | 宇㭞宇宇宇 EXE絮宇 60MB絮.NET 縏怪 |
-| .NET Framework 4.x 絮宇 | .NET Framework 絮絮 EXE絮Win10/11 絮標 |
+| .NET SDK 6+ あり | 完全スタンドアロン EXE（約 60MB、.NET 不要） |
+| .NET Framework 4.x のみ | .NET Framework 依存 EXE（Win10/11 は標準搭載） |
 
-.NET SDK 縏怪 場合: https://dotnet.microsoft.com/ja-jp/download
+.NET SDK がない場合: https://dotnet.microsoft.com/ja-jp/download
+
+## 操作方法
+
+| 操作 | 動作 |
+|------|------|
+| `Space` / `Enter` | スタート / 一時停止 |
+| `R` | リセット |
+| `↑` / `↓` カーソルキー | 設定時間を ±1分 |
+| `▲` / `▼` ボタン | 設定時間を ±1分（長押しで連続変更） |
+| 数字キー 1〜2桁 + 待機 | 分を直接入力（例: `1`,`5` → 15分）|
+| ウィンドウ枠ドラッグ | サイズ変更 |
+| タイトルバードラッグ | 移動 |
+
+## 表示仕様
+
+### プログレスバー（左側・16セグメント）
+
+| 状態 | 色 | 方向 |
+|------|----|------|
+| 残り 30% 以上 | ほぼ黒（濃いグレー） | 左から右に点灯、右から消える |
+| 残り 30% 未満 | 黄色 | 同上 |
+| 時間切れ（超過中） | 赤 | **右から左へ** 逆向きに伸びる |
+
+### 時刻表示（右側）
+
+| 状態 | 色 | 内容 |
+|------|----|------|
+| カウントダウン中 | 白 | 残り時間（MM:SS） |
+| 時間切れ後 | 赤 | 超過時間カウントアップ（MM:SS）|
+
+- 超過時間の上限 = 設定時間（例：設定10分なら最大10分超過まで）
+
+## 設定の自動保存
+
+ウィンドウを閉じると `timer_config.ini` に自動保存されます：
+- 設定時間
+- ウィンドウサイズ
+- ウィンドウ位置
+
+次回起動時に前回の設定が復元されます。
