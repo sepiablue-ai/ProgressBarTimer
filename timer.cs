@@ -46,13 +46,13 @@ namespace ProgressBarTimer
 
         //──────────────────── パレット ────────────────────────────
         static readonly Color C_OUTER   = Color.FromArgb(210, 210, 210);
-        static readonly Color C_INNER   = Color.FromArgb(22,  22,  22 );
-        static readonly Color C_SEG_OFF = Color.FromArgb(48,  48,  48 );
-        static readonly Color C_SEG_ON  = Color.FromArgb(15,  15,  15 );  // ほぼ黒
-        static readonly Color C_WARN    = Color.FromArgb(200, 165, 0  );  // 黄色
-        static readonly Color C_OT      = Color.FromArgb(210, 28,  0  );  // 赤
+        static readonly Color C_INNER   = Color.FromArgb(6,   6,   6  );  // バー背景: 黒
+        static readonly Color C_SEG_OFF = Color.FromArgb(18,  18,  18 );  // 非アクティブ: ほぼ黒（グリッド見せるため微妙に区別）
+        static readonly Color C_SEG_ON  = Color.FromArgb(228, 228, 228);  // アクティブ: 白
+        static readonly Color C_WARN    = Color.FromArgb(220, 180, 0  );  // 警告: 黄色
+        static readonly Color C_OT      = Color.FromArgb(215, 30,  0  );  // 超過: 赤
         static readonly Color C_TXT     = Color.FromArgb(218, 218, 218);  // 通常テキスト
-        static readonly Color C_TXT_OT  = Color.FromArgb(255, 48,  16 );  // 超過テキスト
+        static readonly Color C_TXT_OT  = Color.FromArgb(255, 50,  16 );  // 超過テキスト
         static readonly Color C_BTN     = Color.FromArgb(185, 185, 185);  // ボタン
         static readonly Color C_DIV     = Color.FromArgb(80,  80,  80 );  // 区切り線
 
@@ -70,7 +70,7 @@ namespace ProgressBarTimer
         System.Windows.Forms.Timer ticker;
         System.Windows.Forms.Timer keyTimer;
         System.Windows.Forms.Timer repeatTimer;
-        Button   btnUp, btnDn;
+        Button   btnUp, btnDn, btnStartStop;
         Font     timeFont;
 
         //──────────────────── レイアウトキャッシュ ───────────────
@@ -97,14 +97,21 @@ namespace ProgressBarTimer
             // ── ▲▼ ボタン ──
             btnUp = MakeButton("▲");
             btnDn = MakeButton("▼");
-            btnUp.MouseDown += (s, e) => BeginRepeat(true);
-            btnDn.MouseDown += (s, e) => BeginRepeat(false);
-            btnUp.MouseUp   += (s, e) => EndRepeat();
-            btnDn.MouseUp   += (s, e) => EndRepeat();
+            btnUp.MouseDown  += (s, e) => BeginRepeat(true);
+            btnDn.MouseDown  += (s, e) => BeginRepeat(false);
+            btnUp.MouseUp    += (s, e) => EndRepeat();
+            btnDn.MouseUp    += (s, e) => EndRepeat();
             btnUp.MouseLeave += (s, e) => EndRepeat();
             btnDn.MouseLeave += (s, e) => EndRepeat();
             Controls.Add(btnUp);
             Controls.Add(btnDn);
+
+            // ── ▶/■ スタート・ストップボタン ──
+            btnStartStop = MakeButton("▶");
+            btnStartStop.Font      = new Font("Segoe UI", 9f, FontStyle.Regular, GraphicsUnit.Point);
+            btnStartStop.BackColor = Color.FromArgb(160, 160, 160);
+            btnStartStop.Click    += (s, e) => { Toggle(); };
+            Controls.Add(btnStartStop);
 
             // ── メインタイマー ──
             ticker          = new System.Windows.Forms.Timer();
@@ -125,6 +132,7 @@ namespace ProgressBarTimer
             DoLayout();
         }
 
+        //──────────────────── ボタン生成 ─────────────────────────
         Button MakeButton(string text)
         {
             Button b = new Button();
@@ -139,6 +147,7 @@ namespace ProgressBarTimer
             return b;
         }
 
+        //──────────────────── レイアウト ─────────────────────────
         void DoLayout()
         {
             int W = ClientSize.Width;
@@ -148,8 +157,10 @@ namespace ProgressBarTimer
             int iw = W - PAD * 2;
             int ih = H - PAD * 2;
 
-            int btnW = Math.Max(18, Math.Min(26, iw / 10));
-            int btnH = Math.Max(12, (ih - 4) / 2);
+            int btnW  = Math.Max(18, Math.Min(26, iw / 10));
+            int gap   = 2;
+            // ▲ ▼ ▶ の3ボタンを縦に均等配置
+            int btnH  = Math.Max(10, (ih - gap * 2) / 3);
             int timeW = Math.Max(72, iw * 32 / 100);
             int barW  = iw - DIV_W - timeW - btnW - 8;
 
@@ -158,15 +169,19 @@ namespace ProgressBarTimer
             rcTime = new Rectangle(rcDiv.Right + 2, PAD + 3, Math.Max(4, timeW - 4), Math.Max(4, ih - 6));
 
             int btnX = rcTime.Right + 2;
-            btnUp.Bounds = new Rectangle(btnX, PAD + 2,            btnW - 2, btnH);
-            btnDn.Bounds = new Rectangle(btnX, PAD + 2 + btnH + 2, btnW - 2, btnH);
+            int btnY = PAD + 2;
+            btnUp.Bounds        = new Rectangle(btnX, btnY,                    btnW - 2, btnH);
+            btnDn.Bounds        = new Rectangle(btnX, btnY + btnH + gap,       btnW - 2, btnH);
+            btnStartStop.Bounds = new Rectangle(btnX, btnY + (btnH + gap) * 2, btnW - 2, btnH);
 
+            // 時刻フォントをパネル高さに合わせて再生成
             Font old = timeFont;
             float fs = Math.Max(8f, rcTime.Height * 0.52f);
             timeFont = new Font("Courier New", fs, FontStyle.Bold, GraphicsUnit.Pixel);
             if (old != null) old.Dispose();
         }
 
+        //──────────────────── 描画 ───────────────────────────────
         void OnPaint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -188,6 +203,7 @@ namespace ProgressBarTimer
             PaintTime(g);
         }
 
+        // ── プログレスバー（セグメント）描画 ──
         void PaintSegments(Graphics g)
         {
             Rectangle r = rcBar;
@@ -199,10 +215,11 @@ namespace ProgressBarTimer
 
             int   active;
             Color activeCol;
-            bool  reverseDir;
+            bool  reverseDir; // true → 右側から点灯（超過時）
 
             if (!isOvertime)
             {
+                // カウントダウン: 左から右へ点灯、右から消えていく
                 double ratio = (setSeconds > 0)
                     ? Math.Max(0.0, Math.Min(1.0, remaining / setSeconds)) : 0.0;
                 active       = (int)Math.Round(ratio * n);
@@ -211,6 +228,7 @@ namespace ProgressBarTimer
             }
             else
             {
+                // 超過: 右側から左に向かって赤が伸びる（逆向き）
                 double ratio = (setSeconds > 0)
                     ? Math.Max(0.0, Math.Min(1.0, overtimeElapsed / setSeconds)) : 0.0;
                 active       = (int)Math.Round(ratio * n);
@@ -232,6 +250,7 @@ namespace ProgressBarTimer
             }
         }
 
+        // ── 時刻テキスト描画 ──
         void PaintTime(Graphics g)
         {
             Rectangle r = rcTime;
@@ -263,6 +282,7 @@ namespace ProgressBarTimer
                 g.DrawString(text, timeFont, tb, tx, ty);
         }
 
+        //──────────────────── タイマーロジック ───────────────────
         void OnTick(object sender, EventArgs e)
         {
             DateTime now   = DateTime.UtcNow;
@@ -287,6 +307,7 @@ namespace ProgressBarTimer
                     overtimeElapsed = setSeconds;
                     ticker.Stop();
                     isRunning = false;
+                    UpdateStartButton();
                 }
             }
 
@@ -307,6 +328,7 @@ namespace ProgressBarTimer
                 ticker.Start();
                 isRunning = true;
             }
+            UpdateStartButton();
         }
 
         void Reset()
@@ -316,7 +338,14 @@ namespace ProgressBarTimer
             remaining       = setSeconds;
             overtimeElapsed = 0;
             isOvertime      = false;
+            UpdateStartButton();
             Invalidate();
+        }
+
+        void UpdateStartButton()
+        {
+            if (btnStartStop == null) return;
+            btnStartStop.Text = isRunning ? "■" : "▶";  // ■=ストップ, ▶=スタート
         }
 
         void AdjustTime(int delta)
@@ -331,6 +360,7 @@ namespace ProgressBarTimer
             return Math.Max(MIN_SECS, Math.Min(MAX_SECS, v));
         }
 
+        //──────────────────── キーボード ─────────────────────────
         void OnKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
@@ -375,6 +405,7 @@ namespace ProgressBarTimer
             Reset();
         }
 
+        //──────────────────── ボタン長押しリピート ───────────────
         void BeginRepeat(bool up)
         {
             if (isRunning) return;
@@ -403,6 +434,7 @@ namespace ProgressBarTimer
             }
         }
 
+        //──────────────────── 設定ファイル ───────────────────────
         void LoadConfig()
         {
             setSeconds = DEFAULT_SECS;
@@ -496,6 +528,7 @@ namespace ProgressBarTimer
             catch { }
         }
 
+        //──────────────────── Dispose ─────────────────────────────
         protected override void Dispose(bool disposing)
         {
             if (disposing)
