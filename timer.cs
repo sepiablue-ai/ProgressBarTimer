@@ -256,7 +256,7 @@ namespace ProgressBarTimer
             int mainY = rcPanel.Y + Math.Max(18, (contentH - mainH) / 2 + 7);
             int btnH = Math.Max(26, Math.Min(34, mainH));
             int smallW = Math.Max(28, Math.Min(34, w / 13));
-            int playW = Math.Max(34, Math.Min(42, w / 10));
+            int playW = smallW;
             int controlsW = smallW * 2 + playW + gap * 2;
             int controlsX = rcPanel.Right - 12 - controlsW;
 
