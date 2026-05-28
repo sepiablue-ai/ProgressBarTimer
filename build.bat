@@ -64,10 +64,12 @@ echo.
 "%CSC%" ^
     /target:winexe ^
     /out:timer.exe ^
+    /win32icon:assets\app-icon.ico ^
     /reference:System.dll ^
     /reference:System.Windows.Forms.dll ^
     /reference:System.Drawing.dll ^
     /reference:System.Core.dll ^
+    /resource:assets\app-icon.ico,ProgressBarTimer.assets.app-icon.ico ^
     /resource:assets\buttons\btn_minus.png,ProgressBarTimer.assets.buttons.btn_minus.png ^
     /resource:assets\buttons\btn_play.png,ProgressBarTimer.assets.buttons.btn_play.png ^
     /resource:assets\buttons\btn_pause.png,ProgressBarTimer.assets.buttons.btn_pause.png ^

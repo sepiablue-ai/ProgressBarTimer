@@ -43,9 +43,6 @@ namespace ProgressBarTimer
         const int HTBOTTOMLEFT = 16;
         const int HTBOTTOMRIGHT = 17;
 
-        static readonly string CFG = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory, "timer_config.ini");
-
         static readonly Color C_BG = Color.FromArgb(18, 20, 24);
         static readonly Color C_PANEL = Color.FromArgb(28, 31, 37);
         static readonly Color C_PANEL_EDGE = Color.FromArgb(58, 64, 74);
@@ -91,10 +88,11 @@ namespace ProgressBarTimer
 
         public TimerForm()
         {
-            LoadConfig();
+            setSeconds = DEFAULT_SECS;
             remaining = setSeconds;
 
             Text = "ProgressBarTimer";
+            Icon = LoadAppIcon();
             TopMost = true;
             DoubleBuffered = true;
             KeyPreview = true;
@@ -102,8 +100,8 @@ namespace ProgressBarTimer
             FormBorderStyle = FormBorderStyle.None;
             MinimumSize = new Size(360, 86);
             StartPosition = FormStartPosition.Manual;
-            Size = LoadSize();
-            Location = ClampToScreen(LoadLocation());
+            Size = new Size(460, 112);
+            Location = ClampToScreen(new Point(200, 200));
 
             LoadButtonImages();
 
@@ -145,7 +143,6 @@ namespace ProgressBarTimer
             MouseDown += OnFormMouseDown;
             Resize += delegate { DoLayout(); Invalidate(); };
             Paint += OnPaint;
-            FormClosed += delegate { SaveConfig(); };
 
             labelFont = new Font("Segoe UI", 8.5f, FontStyle.Regular, GraphicsUnit.Point);
             DoLayout();
@@ -207,6 +204,30 @@ namespace ProgressBarTimer
                     if (stream == null) return null;
                     using (Image src = Image.FromStream(stream))
                         return new Bitmap(src);
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        static Icon LoadAppIcon()
+        {
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "app-icon.ico");
+            if (File.Exists(path))
+            {
+                try { return new Icon(path); }
+                catch { }
+            }
+
+            try
+            {
+                Assembly asm = Assembly.GetExecutingAssembly();
+                using (Stream stream = asm.GetManifestResourceStream("ProgressBarTimer.assets.app-icon.ico"))
+                {
+                    if (stream == null) return null;
+                    return new Icon(stream);
                 }
             }
             catch
@@ -576,76 +597,6 @@ namespace ProgressBarTimer
             }
         }
 
-        void LoadConfig()
-        {
-            setSeconds = DEFAULT_SECS;
-            if (!File.Exists(CFG)) return;
-            try
-            {
-                foreach (string line in File.ReadAllLines(CFG))
-                {
-                    int eq = line.IndexOf('=');
-                    if (eq < 1) continue;
-                    string k = line.Substring(0, eq).Trim();
-                    string v = line.Substring(eq + 1).Trim();
-                    int parsed;
-                    if (k == "set_seconds" && int.TryParse(v, out parsed))
-                        setSeconds = Clamp(parsed);
-                }
-            }
-            catch { }
-        }
-
-        Size LoadSize()
-        {
-            if (File.Exists(CFG))
-            {
-                try
-                {
-                    foreach (string line in File.ReadAllLines(CFG))
-                    {
-                        int eq = line.IndexOf('=');
-                        if (eq < 1) continue;
-                        if (line.Substring(0, eq).Trim() == "size")
-                        {
-                            string[] p = line.Substring(eq + 1).Trim().Split(',');
-                            int w, h;
-                            if (p.Length == 2 && int.TryParse(p[0], out w)
-                                              && int.TryParse(p[1], out h))
-                                return new Size(Math.Max(360, w), Math.Max(86, h));
-                        }
-                    }
-                }
-                catch { }
-            }
-            return new Size(460, 112);
-        }
-
-        Point LoadLocation()
-        {
-            if (File.Exists(CFG))
-            {
-                try
-                {
-                    foreach (string line in File.ReadAllLines(CFG))
-                    {
-                        int eq = line.IndexOf('=');
-                        if (eq < 1) continue;
-                        if (line.Substring(0, eq).Trim() == "location")
-                        {
-                            string[] p = line.Substring(eq + 1).Trim().Split(',');
-                            int x, y;
-                            if (p.Length == 2 && int.TryParse(p[0], out x)
-                                              && int.TryParse(p[1], out y))
-                                return new Point(x, y);
-                        }
-                    }
-                }
-                catch { }
-            }
-            return new Point(200, 200);
-        }
-
         static Point ClampToScreen(Point p)
         {
             Rectangle screen = Screen.PrimaryScreen.WorkingArea;
@@ -653,20 +604,6 @@ namespace ProgressBarTimer
                 Math.Max(screen.Left, Math.Min(p.X, screen.Right - 100)),
                 Math.Max(screen.Top, Math.Min(p.Y, screen.Bottom - 50))
             );
-        }
-
-        void SaveConfig()
-        {
-            try
-            {
-                File.WriteAllLines(CFG, new string[]
-                {
-                    "set_seconds=" + setSeconds,
-                    "size=" + Width + "," + Height,
-                    "location=" + Location.X + "," + Location.Y
-                });
-            }
-            catch { }
         }
 
         void OnFormMouseDown(object sender, MouseEventArgs e)

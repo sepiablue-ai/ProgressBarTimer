@@ -7,8 +7,10 @@
     <Nullable>disable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <ApplicationIcon>assets\app-icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="assets\app-icon.ico" LogicalName="ProgressBarTimer.assets.app-icon.ico" />
     <EmbeddedResource Include="assets\buttons\btn_minus.png" LogicalName="ProgressBarTimer.assets.buttons.btn_minus.png" />
     <EmbeddedResource Include="assets\buttons\btn_play.png" LogicalName="ProgressBarTimer.assets.buttons.btn_play.png" />
     <EmbeddedResource Include="assets\buttons\btn_pause.png" LogicalName="ProgressBarTimer.assets.buttons.btn_pause.png" />
