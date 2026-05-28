@@ -30,7 +30,7 @@ Windows 向けのシンプルなカウントダウンタイマーです。常に
 | `Up` / `Down` | 設定時間を 1 分ずつ増減 |
 | `-` / `+` ボタン | 設定時間を 1 分ずつ増減。長押しで連続変更 |
 | 再生 / 一時停止ボタン | スタート / 一時停止 |
-| 時間表示をダブルクリック | 停止中のみ、設定時間を 10 分に戻してリセット |
+| 時間表示をダブルクリック | 停止中のみ、現在または直前の開始時の設定時間へ戻してリセット |
 | 数字キー 1-2 桁 | 分数を直接入力。例: `1`, `5` で 15 分 |
 | 上部バーをドラッグ | ウィンドウ移動 |
 | ウィンドウ端をドラッグ | サイズ変更 |
@@ -79,7 +79,7 @@ ProgressBarTimer is a small countdown timer for Windows. It stays on top and sho
 | `Up` / `Down` | Increase or decrease the timer by 1 minute |
 | `-` / `+` buttons | Increase or decrease the timer by 1 minute. Hold to repeat |
 | Play / pause button | Start / pause |
-| Double-click the time display | When stopped, reset the timer length back to 10 minutes |
+| Double-click the time display | When stopped, reset to the timer length used for the current or previous run |
 | Number keys, 1-2 digits | Enter minutes directly. Example: `1`, `5` means 15 minutes |
 | Drag the top bar | Move the window |
 | Drag a window edge | Resize the window |

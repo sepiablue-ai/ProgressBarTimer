@@ -64,6 +64,7 @@ namespace ProgressBarTimer
         static readonly Color C_BTN_DOWN = Color.FromArgb(36, 41, 49);
 
         int setSeconds;
+        int resetSeconds;
         double remaining;
         double overtimeElapsed;
         bool isRunning;
@@ -91,6 +92,7 @@ namespace ProgressBarTimer
         public TimerForm()
         {
             setSeconds = DEFAULT_SECS;
+            resetSeconds = setSeconds;
             remaining = setSeconds;
 
             Text = "ProgressBarTimer";
@@ -488,7 +490,8 @@ namespace ProgressBarTimer
             }
             else
             {
-                if (isOvertime && overtimeElapsed >= setSeconds) Reset();
+                if (isOvertime && overtimeElapsed >= MAX_DISPLAY_SECS) Reset();
+                resetSeconds = setSeconds;
                 lastTick = DateTime.UtcNow;
                 ticker.Start();
                 isRunning = true;
@@ -507,10 +510,10 @@ namespace ProgressBarTimer
             Invalidate();
         }
 
-        void ResetToDefault()
+        void ResetToStartSetting()
         {
             if (isRunning) return;
-            setSeconds = DEFAULT_SECS;
+            setSeconds = resetSeconds;
             Reset();
         }
 
@@ -527,6 +530,7 @@ namespace ProgressBarTimer
         {
             if (isRunning) return;
             setSeconds = Clamp(setSeconds + delta);
+            resetSeconds = setSeconds;
             Reset();
         }
 
@@ -583,6 +587,7 @@ namespace ProgressBarTimer
             keyBuf = "";
             if (mins < 1) mins = 1;
             setSeconds = Clamp(mins * 60);
+            resetSeconds = setSeconds;
             Reset();
         }
 
@@ -657,7 +662,7 @@ namespace ProgressBarTimer
         void OnFormMouseDoubleClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left && rcTime.Contains(e.Location))
-                ResetToDefault();
+                ResetToStartSetting();
         }
 
         protected override void WndProc(ref Message m)
