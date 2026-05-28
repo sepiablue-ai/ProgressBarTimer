@@ -26,6 +26,7 @@ namespace ProgressBarTimer
         const int DEFAULT_SECS = 600;
         const int MIN_SECS = 60;
         const int MAX_SECS = 5999;
+        const int MAX_DISPLAY_SECS = 6039;
         const int TICK_MS = 100;
         const int CHROME_H = 26;
         const int RESIZE_GRIP = 7;
@@ -431,7 +432,7 @@ namespace ProgressBarTimer
             }
             else
             {
-                val = (int)overtimeElapsed;
+                val = Math.Min(MAX_DISPLAY_SECS, (int)overtimeElapsed);
                 col = C_OT;
             }
 
@@ -466,9 +467,9 @@ namespace ProgressBarTimer
             else
             {
                 overtimeElapsed += delta;
-                if (overtimeElapsed >= setSeconds)
+                if (overtimeElapsed >= MAX_DISPLAY_SECS)
                 {
-                    overtimeElapsed = setSeconds;
+                    overtimeElapsed = MAX_DISPLAY_SECS;
                     ticker.Stop();
                     isRunning = false;
                     UpdateStartButton();
