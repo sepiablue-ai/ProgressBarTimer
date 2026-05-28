@@ -33,6 +33,7 @@ namespace ProgressBarTimer
 
         const int WM_NCHITTEST = 0x0084;
         const int WM_NCLBUTTONDOWN = 0x00A1;
+        const int WM_EXITSIZEMOVE = 0x0232;
         const int HTCAPTION = 2;
         const int HTLEFT = 10;
         const int HTRIGHT = 11;
@@ -141,6 +142,7 @@ namespace ProgressBarTimer
 
             KeyDown += OnKeyDown;
             MouseDown += OnFormMouseDown;
+            MouseDoubleClick += OnFormMouseDoubleClick;
             Resize += delegate { DoLayout(); Invalidate(); };
             Paint += OnPaint;
 
@@ -504,6 +506,13 @@ namespace ProgressBarTimer
             Invalidate();
         }
 
+        void ResetToDefault()
+        {
+            if (isRunning) return;
+            setSeconds = DEFAULT_SECS;
+            Reset();
+        }
+
         void UpdateStartButton()
         {
             if (btnStartStop == null) return;
@@ -527,6 +536,13 @@ namespace ProgressBarTimer
 
         void OnKeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Control && e.KeyCode == Keys.Home)
+            {
+                CenterOnCurrentScreen();
+                e.Handled = true;
+                return;
+            }
+
             switch (e.KeyCode)
             {
                 case Keys.Space:
@@ -606,6 +622,28 @@ namespace ProgressBarTimer
             );
         }
 
+        void CenterOnCurrentScreen()
+        {
+            Rectangle screen = Screen.FromControl(this).WorkingArea;
+            Location = new Point(
+                screen.Left + (screen.Width - Width) / 2,
+                screen.Top + (screen.Height - Height) / 2);
+        }
+
+        void KeepWindowOnScreen()
+        {
+            if (WindowState != FormWindowState.Normal) return;
+
+            Rectangle screen = Screen.FromRectangle(Bounds).WorkingArea;
+            int w = Math.Min(Width, screen.Width);
+            int h = Math.Min(Height, screen.Height);
+            int x = Math.Max(screen.Left, Math.Min(Left, screen.Right - w));
+            int y = Math.Max(screen.Top, Math.Min(Top, screen.Bottom - h));
+
+            if (Width != w || Height != h || Left != x || Top != y)
+                Bounds = new Rectangle(x, y, w, h);
+        }
+
         void OnFormMouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Left || e.Y >= CHROME_H) return;
@@ -615,9 +653,21 @@ namespace ProgressBarTimer
             SendMessage(Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
         }
 
+        void OnFormMouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left && rcTime.Contains(e.Location))
+                ResetToDefault();
+        }
+
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
+
+            if (m.Msg == WM_EXITSIZEMOVE)
+            {
+                KeepWindowOnScreen();
+                return;
+            }
 
             if (m.Msg != WM_NCHITTEST || WindowState == FormWindowState.Maximized) return;
             if ((int)m.Result != 1) return;
