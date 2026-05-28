@@ -8,4 +8,10 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\buttons\btn_minus.png" LogicalName="ProgressBarTimer.assets.buttons.btn_minus.png" />
+    <EmbeddedResource Include="assets\buttons\btn_play.png" LogicalName="ProgressBarTimer.assets.buttons.btn_play.png" />
+    <EmbeddedResource Include="assets\buttons\btn_pause.png" LogicalName="ProgressBarTimer.assets.buttons.btn_pause.png" />
+    <EmbeddedResource Include="assets\buttons\btn_plus.png" LogicalName="ProgressBarTimer.assets.buttons.btn_plus.png" />
+  </ItemGroup>
 </Project>

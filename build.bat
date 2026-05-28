@@ -68,6 +68,10 @@ echo.
     /reference:System.Windows.Forms.dll ^
     /reference:System.Drawing.dll ^
     /reference:System.Core.dll ^
+    /resource:assets\buttons\btn_minus.png,ProgressBarTimer.assets.buttons.btn_minus.png ^
+    /resource:assets\buttons\btn_play.png,ProgressBarTimer.assets.buttons.btn_play.png ^
+    /resource:assets\buttons\btn_pause.png,ProgressBarTimer.assets.buttons.btn_pause.png ^
+    /resource:assets\buttons\btn_plus.png,ProgressBarTimer.assets.buttons.btn_plus.png ^
     timer.cs
 
 if %ERRORLEVEL% == 0 (
